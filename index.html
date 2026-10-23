@@ -18,7 +18,7 @@
     .buttons{display:flex;justify-content:center;align-items:center;gap:14px;min-height:58px;flex-wrap:wrap}
     button{font:inherit;font-weight:750;border:0;border-radius:14px;padding:14px 30px;min-width:112px;cursor:pointer;transition:transform .18s,box-shadow .18s,background .18s}
     button:focus-visible{outline:3px solid white;outline-offset:4px}
-    #yes{color:#04221b;background:linear-gradient(120deg,var(--mint),#82e8ff);box-shadow:0 8px 28px #55f5c329}
+    #yes{color:#04221b;background:linear-gradient(120deg,var(--mint),#82e8ff);box-shadow:0 8px 28px #55f5c329;z-index:99999}
     #yes:hover{box-shadow:0 10px 34px #55f5c34a}
     #no{color:#eaffff;background:#ffffff0d;border:1px solid #a6e9e52c}
     #no:hover{background:#ffffff18}
@@ -62,32 +62,43 @@
     function moveYes() {
       clicks++;
       message.textContent = replies[(clicks - 1) % replies.length];
-      // Keep the button inside the viewport and away from text and other controls.
+
+      // Pin it to the top visual layer before moving so it never vanishes behind the card.
+      const oldRect = yes.getBoundingClientRect();
       yes.style.position = 'fixed';
-      yes.style.zIndex = '5';
-      const pad = 18;
+      yes.style.zIndex = '99999';
+      yes.style.margin = '0';
+      yes.style.left = Math.max(12, Math.min(oldRect.left, innerWidth - yes.offsetWidth - 12)) + 'px';
+      yes.style.top = Math.max(12, Math.min(oldRect.top, innerHeight - yes.offsetHeight - 12)) + 'px';
+
+      const pad = 14;
       const w = yes.offsetWidth;
       const h = yes.offsetHeight;
       const cardRect = card.getBoundingClientRect();
-      const zones = [
-        {x: pad, y: pad, w: Math.max(0, innerWidth * .34 - pad), h: Math.max(0, innerHeight - pad * 2)},
-        {x: innerWidth * .66, y: pad, w: Math.max(0, innerWidth * .34 - pad), h: Math.max(0, innerHeight - pad * 2)},
-        {x: pad, y: pad, w: Math.max(0, innerWidth - pad * 2), h: Math.max(0, cardRect.top - pad * 2)},
-        {x: pad, y: cardRect.bottom + 20, w: Math.max(0, innerWidth - pad * 2), h: Math.max(0, innerHeight - cardRect.bottom - 40)}
-      ].filter(z => z.w >= w && z.h >= h);
-      let spot = null;
-      for (let tries = 0; tries < 60 && !spot; tries++) {
-        const zone = zones[Math.floor(Math.random() * zones.length)];
-        if (!zone) break;
-        const x = zone.x + Math.random() * (zone.w - w);
-        const y = zone.y + Math.random() * (zone.h - h);
-        const candidate = {left:x,top:y,right:x+w,bottom:y+h};
-        const overlapsCard = candidate.left < cardRect.right && candidate.right > cardRect.left && candidate.top < cardRect.bottom && candidate.bottom > cardRect.top;
-        const overlapsNo = no.offsetParent !== null && (()=>{const r=no.getBoundingClientRect();return candidate.left<r.right+12&&candidate.right>r.left-12&&candidate.top<r.bottom+12&&candidate.bottom>r.top-12})();
-        if (!overlapsCard && !overlapsNo) spot = {x,y};
+      const noRect = no.getBoundingClientRect();
+      const candidates = [];
+      // Sample the whole viewport, accepting only clear space outside the card and Hayır button.
+      for (let i = 0; i < 160; i++) {
+        const x = pad + Math.random() * Math.max(1, innerWidth - w - pad * 2);
+        const y = pad + Math.random() * Math.max(1, innerHeight - h - pad * 2);
+        const r = {left:x, top:y, right:x+w, bottom:y+h};
+        const hitsCard = r.left < cardRect.right + 10 && r.right > cardRect.left - 10 &&
+                         r.top < cardRect.bottom + 10 && r.bottom > cardRect.top - 10;
+        const hitsNo = no.offsetParent !== null && r.left < noRect.right + 10 &&
+                       r.right > noRect.left - 10 && r.top < noRect.bottom + 10 &&
+                       r.bottom > noRect.top - 10;
+        if (!hitsCard && !hitsNo) candidates.push({x,y});
       }
-      if (spot) { yes.style.left = spot.x + 'px'; yes.style.top = spot.y + 'px'; }
-      else { yes.style.left = pad + 'px'; yes.style.top = pad + 'px'; }
+
+      if (candidates.length) {
+        const spot = candidates[Math.floor(Math.random() * candidates.length)];
+        yes.style.left = spot.x + 'px';
+        yes.style.top = spot.y + 'px';
+      } else {
+        // Small screens may have no free area: keep it visible at the very top.
+        yes.style.left = Math.max(pad, (innerWidth - w) / 2) + 'px';
+        yes.style.top = pad + 'px';
+      }
       yes.style.transform = 'scale(' + Math.pow(.9, clicks) + ')';
     }
 
