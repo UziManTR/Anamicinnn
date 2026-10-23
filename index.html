@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#071d20">
+  <title>Annem için 💚</title>
+  <style>
+    :root{color-scheme:dark;--mint:#65f5c3;--blue:#55c9ff;--ink:#071d20}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100svh;display:grid;place-items:center;overflow:hidden;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#f2fffb;background:radial-gradient(ellipse at 18% 18%,#124c4b 0,transparent 42%),radial-gradient(ellipse at 82% 82%,#103c63 0,transparent 44%),linear-gradient(135deg,#061819,#071b2b 65%,#071c22)}
+    body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.18;background-image:radial-gradient(#a7ffec 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(transparent,#000,transparent)}
+    .glow{position:fixed;width:340px;height:340px;border-radius:50%;filter:blur(100px);opacity:.15;pointer-events:none;background:var(--mint);top:-150px;right:-100px}
+    main{position:relative;width:min(92vw,620px);min-height:340px;padding:clamp(28px,6vw,58px) 22px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;border:1px solid #8bffe72c;border-radius:30px;background:#071c20b8;box-shadow:0 24px 90px #0005;backdrop-filter:blur(18px)}
+    .eyebrow{margin:0;color:var(--mint);font-size:.75rem;font-weight:800;letter-spacing:.22em;text-transform:uppercase}
+    h1{font-size:clamp(1.8rem,6vw,3rem);line-height:1.13;letter-spacing:-.045em;margin:0;text-wrap:balance}
+    .sub{margin:0;color:#b8d8d9;font-size:1rem}
+    .buttons{display:flex;justify-content:center;align-items:center;gap:14px;min-height:58px;flex-wrap:wrap}
+    button{font:inherit;font-weight:750;border:0;border-radius:14px;padding:14px 30px;min-width:112px;cursor:pointer;transition:transform .18s,box-shadow .18s,background .18s}
+    button:focus-visible{outline:3px solid white;outline-offset:4px}
+    #yes{color:#04221b;background:linear-gradient(120deg,var(--mint),#82e8ff);box-shadow:0 8px 28px #55f5c329}
+    #yes:hover{box-shadow:0 10px 34px #55f5c34a}
+    #no{color:#eaffff;background:#ffffff0d;border:1px solid #a6e9e52c}
+    #no:hover{background:#ffffff18}
+    .love{display:none;align-items:center;gap:12px;animation:pop .5s cubic-bezier(.2,.9,.2,1.2) both}
+    .love.show{display:flex;flex-direction:column}
+    .emoji{font-size:clamp(4rem,15vw,6rem);line-height:1;filter:drop-shadow(0 0 24px #65f5c344)}
+    .yay{font-size:clamp(2rem,7vw,3.1rem);margin:0;background:linear-gradient(100deg,var(--mint),var(--blue));color:transparent;background-clip:text}
+    .footer{color:#9bded9;font-weight:800;letter-spacing:.22em;margin-top:4px}
+    .hidden{display:none!important}
+    @keyframes pop{from{opacity:0;transform:translateY(12px) scale(.88)}to{opacity:1;transform:translateY(0) scale(1)}}
+    @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <div class="glow" aria-hidden="true"></div>
+  <main id="card">
+    <p class="eyebrow">Sana minicik bir not 💌</p>
+    <h1 id="question">Hâlâ üzgün müsün :(</h1>
+    <p class="sub" id="message" aria-live="polite">Bir gülümseme için iki seçenek var.</p>
+    <div class="buttons" id="buttons">
+      <button id="yes" type="button">Evet 🥺</button>
+      <button id="no" type="button">Hayır 💚</button>
+    </div>
+    <section class="love" id="love" aria-live="polite">
+      <div class="emoji" role="img" aria-label="Mutlu yüz">😊</div>
+      <h2 class="yay">Biliyordum!</h2>
+      <div class="footer">I &lt;3 U 💚</div>
+    </section>
+  </main>
+  <script>
+    const yes = document.querySelector('#yes');
+    const no = document.querySelector('#no');
+    const message = document.querySelector('#message');
+    const question = document.querySelector('#question');
+    const buttons = document.querySelector('#buttons');
+    const love = document.querySelector('#love');
+    const card = document.querySelector('#card');
+    const replies = ['Hadi ama :(', 'Emin misin?', 'Gerçekten mi?', 'Bir tane minicik gülümseme? 🥹', 'Seni çok seviyorum 💚', 'Belki şimdi biraz daha iyi?'];
+    let clicks = 0;
+
+    function moveYes() {
+      clicks++;
+      message.textContent = replies[(clicks - 1) % replies.length];
+      // Keep the button inside the viewport and away from text and other controls.
+      yes.style.position = 'fixed';
+      yes.style.zIndex = '5';
+      const pad = 18;
+      const w = yes.offsetWidth;
+      const h = yes.offsetHeight;
+      const cardRect = card.getBoundingClientRect();
+      const zones = [
+        {x: pad, y: pad, w: Math.max(0, innerWidth * .34 - pad), h: Math.max(0, innerHeight - pad * 2)},
+        {x: innerWidth * .66, y: pad, w: Math.max(0, innerWidth * .34 - pad), h: Math.max(0, innerHeight - pad * 2)},
+        {x: pad, y: pad, w: Math.max(0, innerWidth - pad * 2), h: Math.max(0, cardRect.top - pad * 2)},
+        {x: pad, y: cardRect.bottom + 20, w: Math.max(0, innerWidth - pad * 2), h: Math.max(0, innerHeight - cardRect.bottom - 40)}
+      ].filter(z => z.w >= w && z.h >= h);
+      let spot = null;
+      for (let tries = 0; tries < 60 && !spot; tries++) {
+        const zone = zones[Math.floor(Math.random() * zones.length)];
+        if (!zone) break;
+        const x = zone.x + Math.random() * (zone.w - w);
+        const y = zone.y + Math.random() * (zone.h - h);
+        const candidate = {left:x,top:y,right:x+w,bottom:y+h};
+        const overlapsCard = candidate.left < cardRect.right && candidate.right > cardRect.left && candidate.top < cardRect.bottom && candidate.bottom > cardRect.top;
+        const overlapsNo = no.offsetParent !== null && (()=>{const r=no.getBoundingClientRect();return candidate.left<r.right+12&&candidate.right>r.left-12&&candidate.top<r.bottom+12&&candidate.bottom>r.top-12})();
+        if (!overlapsCard && !overlapsNo) spot = {x,y};
+      }
+      if (spot) { yes.style.left = spot.x + 'px'; yes.style.top = spot.y + 'px'; }
+      else { yes.style.left = pad + 'px'; yes.style.top = pad + 'px'; }
+      yes.style.transform = 'scale(' + Math.pow(.9, clicks) + ')';
+    }
+
+    yes.addEventListener('click', moveYes);
+    no.addEventListener('click', () => {
+      buttons.classList.add('hidden');
+      yes.style.display = 'none';
+      question.classList.add('hidden');
+      message.classList.add('hidden');
+      love.classList.add('show');
+      card.style.borderColor = '#65f5c355';
+    });
+  </script>
+</body>
+</html>
